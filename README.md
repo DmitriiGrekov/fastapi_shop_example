@@ -1,7 +1,8 @@
 # fastapi_shop_example
 
 Команды для выполнения миграций:
-### alembic init migrations - инициализация alembic
+### alembic init migrations - инициализация alembic (синхронный)
+### alembic init -t async app/migrations - инициализация alembic (асинхронный)
 ### alembic revision --autogenerate -m "Initial migration" - создаем первую init миграцию
 ### alembic upgrade +2 две версии включая текущую для апгрейда
 ### alembic downgrade -1 на предыдущую для даунгрейда
