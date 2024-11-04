@@ -1,0 +1,55 @@
+version: "3.3"
+
+services:
+  primarydb:
+    image: postgres:12.13
+    restart: always
+
+    environment:
+      POSTGRES_PASSWORD: shop
+      POSTGRES_USER: shop_user
+      POSTGRES_DB: shop_db
+
+    ports:
+      - 32432:5432
+  
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+  
+  web:
+    build:
+      context: .
+      dockerfile: ./ci/Dockerfile
+    command: 'poetry run uvicorn main:app --host 0.0.0.0 --reload'
+    environment:
+      DB_HOST: primarydb
+      DB_PORT: 5432
+      DB_USERNAME: shop_user
+      DB_PASSWORD: shop
+      DB_DATABASES: shop_db
+      BROKER_PORT: 6379
+      BROKER_HOST: redis
+    volumes:
+      - .:/usr/src/app
+      
+    ports:
+      - 8000:8000
+  
+  celery:
+    build:
+      context: .
+      dockerfile: ./ci/Dockerfile
+    command: 'poetry run celery -A main.celery worker --loglevel=info -P gevent'
+    environment:
+      DB_HOST: primarydb
+      DB_PORT: 5432
+      DB_USERNAME: shop_user
+      DB_PASSWORD: shop
+      DB_DATABASES: shop_db
+      BROKER_PORT: 6379
+      BROKER_HOST: redis
+    volumes:
+      - .:/usr/src/app
